@@ -3,40 +3,26 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR....
-      # Check AWS CLI version
+      - echo Logging in to Amazon ECR...
       - aws --version
-      # Log in to Amazon ECR
+
+      #  NEW ECR LOGIN FOR CODEBUILD
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 009334261981.dkr.ecr.us-east-1.amazonaws.com
-      # Define repository URI and image tag
-      - 009334261981.dkr.ecr.us-east-1.amazonaws.com/awsspring
+
+      - echo Build ID is $CODEBUILD_BUILD_ID
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - echo Image tag = $IMAGE_TAG
+
   build:
     commands:
-      - echo Build started on date
-      - echo Building the JAR file...
-      # Build the Java project using Maven
-      - mvn clean install
       - echo Building the Docker image...
-      # Build and tag Docker image
-      - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - docker build -t awsspring .
+
+      # Tag with ECR Repo
+      - docker tag awsspring:latest 009334261981.dkr.ecr.us-east-1.amazonaws.com/awsspring:$IMAGE_TAG
+
   post_build:
     commands:
-      - echo Build completed on date
-      - echo Pushing the Docker image to ECR...
-      # Push Docker images to ECR
-      - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing image definitions file...
-      # Define container name and create imagedefinitions.json for ECS
-      - DOCKER_CONTAINER_NAME=spring-demo-ecr
-      - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - echo $DOCKER_CONTAINER_NAME
-      - echo Displaying imagedefinitions.json content
-      - cat imagedefinitions.json
-
-artifacts:
-  files:
-    - imagedefinitions.json
-    - target/springboot-aws-deploy.jar
+      - echo Pushing image to ECR...
+      - docker push 009334261981.dkr.ecr.us-east-1.amazonaws.com/awsspring:$IMAGE_TAG
+      - echo Build completed successfully!

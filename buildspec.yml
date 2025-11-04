@@ -1,28 +1,26 @@
 version: 0.2
 
 phases:
-  pre_build:
+  install:
+    runtime-versions:
+      java: corretto17
     commands:
-      - echo Logging in to Amazon ECR...
-      - aws --version
-
-      #  NEW ECR LOGIN FOR CODEBUILD
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 009334261981.dkr.ecr.us-east-1.amazonaws.com
-
-      - echo Build ID is $CODEBUILD_BUILD_ID
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
-      - echo Image tag = $IMAGE_TAG
+      - echo "Installing Maven..."
+      - mvn --version
 
   build:
     commands:
-      - echo Building the Docker image...
-      - docker build -t awsspring .
+      - echo "Building Java Lambda Package..."
+      - mvn clean package -DskipTests
+      - ls -lh target/
 
-      # Tag with ECR Repo
-      - docker tag awsspring:latest 009334261981.dkr.ecr.us-east-1.amazonaws.com/awsspring:$IMAGE_TAG
+artifacts:
+  files:
+    - target/*.jar
+  discard-paths: yes
 
-  post_build:
-    commands:
-      - echo Pushing image to ECR...
-      - docker push 009334261981.dkr.ecr.us-east-1.amazonaws.com/awsspring:$IMAGE_TAG
-      - echo Build completed successfully!
+post_build:
+  commands:
+    - echo "Uploading JAR file to S3..."
+    - aws s3 cp target/*.jar s3://springbook-bucket/
+    - echo "✅ Build & Upload completed successfully!"

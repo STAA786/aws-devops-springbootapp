@@ -8,12 +8,12 @@ import java.util.function.Function;
 @SpringBootApplication
 public class SpringbootAwsDeployApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SpringbootAwsDeployApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SpringbootAwsDeployApplication.class, args);
+    }
 
-	@Bean
-	public Function<String, String> hello() {
-		return (input) -> "Hello from Lambda, input = " + input;
-	}
+    @Bean
+    public Function<String, String> hello() {
+        return (input) -> "Hello from Lambda, input = " + input;
+    }
 }

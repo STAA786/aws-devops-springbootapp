@@ -1,5 +1,7 @@
-FROM public.ecr.aws/docker/library/eclipse-temurin:17-jdk-alpine
-RUN apk add curl
-VOLUME /tmp
-COPY target/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+FROM public.ecr.aws/lambda/java:17
+
+# Copy Spring Boot jar to Lambda task root
+COPY target/*.jar ${LAMBDA_TASK_ROOT}/application.jar
+
+# Set Lambda handler for Spring Cloud Function
+CMD [ "org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest" ]

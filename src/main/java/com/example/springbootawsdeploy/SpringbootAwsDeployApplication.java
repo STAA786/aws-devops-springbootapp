@@ -2,6 +2,8 @@ package com.example.springbootawsdeploy;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import java.util.function.Function;
 
 @SpringBootApplication
 public class SpringbootAwsDeployApplication {
@@ -10,4 +12,9 @@ public class SpringbootAwsDeployApplication {
         SpringApplication.run(SpringbootAwsDeployApplication.class, args);
     }
 
+    // ✅ Lambda Function Bean
+    @Bean
+    public Function<String, String> hello() {
+        return (input) -> "Hello from Lambda, input = " + input;
+    }
 }

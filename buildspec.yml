@@ -4,21 +4,19 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region us-east-1 \
-        | docker login --username AWS --password-stdin 009334261981.dkr.ecr.us-east-1.amazonaws.com
-
-      - echo Build ID is $CODEBUILD_BUILD_ID
+      - aws --version
+      - $(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 009334261981.dkr.ecr.us-east-1.amazonaws.com)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
-      - echo Image tag is $IMAGE_TAG
+      - echo Image tag = $IMAGE_TAG
 
   build:
     commands:
-      - echo Building Docker Image...
-      - docker build -t springboot-lambda .
-      - docker tag springboot-lambda:latest 009334261981.dkr.ecr.us-east-1.amazonaws.com/springboot-lambda:$IMAGE_TAG
+      - echo Building Docker image...
+      - docker build -t spring-app .
+      - docker tag spring-app:latest 009334261981.dkr.ecr.us-east-1.amazonaws.com/springboot-lambda:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo Pushing Docker Image to ECR...
+      - echo Pushing image to ECR...
       - docker push 009334261981.dkr.ecr.us-east-1.amazonaws.com/springboot-lambda:$IMAGE_TAG
-      - echo Build Completed Successfully!
+      - echo Build completed successfully.

@@ -2,4 +2,4 @@ FROM public.ecr.aws/lambda/java:17
 
 COPY target/*.jar ${LAMBDA_TASK_ROOT}/application.jar
 
-CMD [ "org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest" ]
+CMD ["org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest"]

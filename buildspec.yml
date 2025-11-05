@@ -1,31 +1,31 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_REGION: "us-east-1"
+    AWS_ACCOUNT_ID: "009334261981"
+
 phases:
   install:
-    runtime-versions:
-      java: corretto17
     commands:
       - echo Installing Maven...
       - yum install -y maven
 
   pre_build:
     commands:
-      - echo Logging to ECR...
-      - aws --version
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 009334261981.dkr.ecr.us-east-1.amazonaws.com
-      - echo Building Maven project...
-      - mvn clean package -DskipTests
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
-      - echo Image tag = $IMAGE_TAG
+      - echo Logging into Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
   build:
     commands:
+      - echo Packaging jar...
+      - mvn clean package -DskipTests
       - echo Building Docker image...
-      - docker build -t springboot-lambda .
-      - docker tag springboot-lambda:latest 009334261981.dkr.ecr.us-east-1.amazonaws.com/springboot-lambda:$IMAGE_TAG
+      - docker build -t spring-lambda .
+      - docker tag spring-lambda:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
 
   post_build:
     commands:
-      - echo Pushing image to ECR...
-      - docker push 009334261981.dkr.ecr.us-east-1.amazonaws.com/springboot-lambda:$IMAGE_TAG
-      - echo Build completed successfully
+      - echo Pushing to ECR...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
+      - echo Build and Push Done ✅

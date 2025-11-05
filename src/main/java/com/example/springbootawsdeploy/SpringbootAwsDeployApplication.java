@@ -12,7 +12,6 @@ public class SpringbootAwsDeployApplication {
         SpringApplication.run(SpringbootAwsDeployApplication.class, args);
     }
 
-    // ✅ Lambda Function Bean
     @Bean
     public Function<String, String> hello() {
         return (input) -> "Hello from Lambda, input = " + input;

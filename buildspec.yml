@@ -10,16 +10,17 @@ phases:
     commands:
       - echo Logging into Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
+      
   build:
     commands:
-      - echo Packaging app...
-      - mvn -q clean package -DskipTests
+      - echo Building JAR...
+      - mvn clean package -Dmaven.test.skip=true
       - echo Building Docker image...
       - docker build -t spring-lambda .
       - docker tag spring-lambda:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
 
   post_build:
     commands:
-      - echo Pushing to ECR...
+      - echo Pushing image to ECR...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
+      - echo Build completed successfully.

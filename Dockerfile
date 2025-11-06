@@ -1,3 +1,3 @@
-FROM openjdk:17-jdk-slim
+FROM amazoncorretto:17-alpine3.19
 COPY target/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]

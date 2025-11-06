@@ -19,13 +19,12 @@ phases:
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
   build:
-  commands:
-    - echo Building JAR...
-    - mvn clean package -Dmaven.test.skip=true
-    - echo Building Docker image...
-    - docker build -t spring-lambda .
-    - docker tag spring-lambda:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
-
+    commands:
+      - echo Building Spring Boot JAR...
+      - mvn clean package -Dmaven.test.skip=true
+      - echo Building Docker image...
+      - docker build -t springboot-lambda .
+      - docker tag springboot-lambda:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
 
   post_build:
     commands:

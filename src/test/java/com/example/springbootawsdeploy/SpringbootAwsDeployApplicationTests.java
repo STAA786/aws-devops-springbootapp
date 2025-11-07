@@ -17,4 +17,3 @@ public class SpringbootAwsDeployApplication {
         return input -> "Hello from Lambda, input = " + input;
     }
 }
-

@@ -1,33 +1,37 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_REGION: "us-east-1"
-    AWS_ACCOUNT_ID: "009334261981"
-
 phases:
   install:
     runtime-versions:
       java: corretto17
     commands:
-      - echo Installing Maven...
-      - yum install -y maven
+      - echo "Installing Maven and Docker"
+      - yum install -y maven docker
+      - service docker start
 
   pre_build:
     commands:
-      - echo Logging into Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - echo "Logging into Amazon ECR..."
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REGION=us-east-1
+      - REPOSITORY_URI=${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/springboot-lambda
+      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
   build:
     commands:
-      - echo Building Spring Boot JAR...
+      - echo "Building project with Maven..."
       - mvn clean package -Dmaven.test.skip=true
-      - echo Building Docker image...
+      - echo "Building Docker image..."
       - docker build -t springboot-lambda .
-      - docker tag springboot-lambda:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
+      - docker tag springboot-lambda:latest $REPOSITORY_URI:latest
 
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/springboot-lambda:latest
-      - echo Build completed successfully.
+      - echo "Pushing Docker image to ECR..."
+      - docker push $REPOSITORY_URI:latest
+      - echo "Writing image definitions file..."
+      - printf '[{"name":"springboot-lambda","imageUri":"%s"}]' $REPOSITORY_URI:latest > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json

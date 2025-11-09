@@ -14,38 +14,54 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.2.5</version>
+    <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <properties>
     <java.version>17</java.version>
+    <spring-cloud.version>2023.0.1</spring-cloud.version>
   </properties>
 
   <dependencies>
-    <!-- Spring Boot Core -->
+    <!-- Core Spring Boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
     </dependency>
 
-    <!-- AWS Lambda Spring Cloud Function -->
+    <!-- Spring Cloud Function AWS Adapter -->
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-function-adapter-aws</artifactId>
+      <version>4.0.3</version>
     </dependency>
 
-    <!-- Spring Cloud Function Web -->
+    <!-- Spring Cloud Function Context -->
     <dependency>
       <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-function-web</artifactId>
+      <artifactId>spring-cloud-function-context</artifactId>
+      <version>4.0.3</version>
     </dependency>
 
-    <!-- Test -->
+    <!-- Test Dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <plugins>
@@ -55,4 +71,5 @@
       </plugin>
     </plugins>
   </build>
+
 </project>

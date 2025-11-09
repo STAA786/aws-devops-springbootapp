@@ -7,27 +7,32 @@ phases:
     commands:
       - echo "Installing Maven and Docker"
       - yum install -y maven docker
-      # Removed 'service docker start'
+      - service docker start
+
   pre_build:
     commands:
       - echo "Logging into Amazon ECR..."
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - REGION=us-east-1
-      - REPOSITORY_URI=${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/springboot-lambda
+      - REPO_NAME=springboot-lambda
+      - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+
   build:
     commands:
       - echo "Building project with Maven..."
-      - mvn clean package -Dmaven.test.skip=true
+      - mvn clean package -DskipTests
       - echo "Building Docker image..."
-      - docker build -t springboot-lambda .
-      - docker tag springboot-lambda:latest $REPOSITORY_URI:latest
+      - docker build -t $REPO_NAME .
+      - docker tag $REPO_NAME:latest $REPOSITORY_URI:latest
+
   post_build:
     commands:
-      - echo "Pushing Docker image to ECR..."
+      - echo "Pushing image to ECR..."
       - docker push $REPOSITORY_URI:latest
-      - echo "Writing image definitions file..."
+      - echo "Creating imagedefinitions.json..."
       - printf '[{"name":"springboot-lambda","imageUri":"%s"}]' $REPOSITORY_URI:latest > imagedefinitions.json
+
 artifacts:
   files:
     - imagedefinitions.json

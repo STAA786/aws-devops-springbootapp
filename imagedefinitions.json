@@ -1,0 +1,6 @@
+[
+  {
+    "name": "springboot-ecr",
+    "imageUri": "646672863546.dkr.ecr.us-east-1.amazonaws.com/springboot-app:latest"
+  }
+]

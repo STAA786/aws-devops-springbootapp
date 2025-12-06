@@ -7,9 +7,9 @@ phases:
       # Check AWS CLI version
       - aws --version
       # Log in to Amazon ECR
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 211125353371.dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 646672863546.dkr.ecr.us-east-1.amazonaws.com
       # Define repository URI and image tag
-      - REPOSITORY_URI=211125353371.dkr.ecr.us-east-1.amazonaws.com/awsdevopsecr
+      - REPOSITORY_URI=646672863546.dkr.ecr.us-east-1.amazonaws.com/springboot-app
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
     commands:
@@ -19,7 +19,7 @@ phases:
       - mvn clean install
       - echo Building the Docker image...
       # Build and tag Docker image
-      - docker build -t $REPOSITORY_URI:latest .
+      - docker build --load -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:

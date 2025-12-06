@@ -3,40 +3,46 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR....
-      # Check AWS CLI version
+      - echo Logging in to Amazon ECR...
       - aws --version
-      # Log in to Amazon ECR
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 646672863546.dkr.ecr.us-east-1.amazonaws.com
-      # Define repository URI and image tag
+
+      # Define repository URI + image tag
       - REPOSITORY_URI=646672863546.dkr.ecr.us-east-1.amazonaws.com/springboot-app
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+
   build:
     commands:
-      - echo Build started on date
-      - echo Building the JAR file...
-      # Build the Java project using Maven
-      - mvn clean install
-      - echo Building the Docker image...
-      # Build and tag Docker image
-      - docker build --load -t $REPOSITORY_URI:latest .
+      - echo Build started on `date`
+      - echo Building JAR using Maven...
+      - mvn clean install -DskipTests
+
+      - echo Building Docker image...
+      # Build Docker image from Dockerfile
+      - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+
   post_build:
     commands:
-      - echo Build completed on date
-      - echo Pushing the Docker image to ECR...
-      # Push Docker images to ECR
+      - echo Build completed on `date`
+      - echo Pushing Docker images to ECR...
+
+      # Push Docker images
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing image definitions file...
-      # Define container name and create imagedefinitions.json for ECS
-      - DOCKER_CONTAINER_NAME=spring-demo-ecr
-      - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - echo $DOCKER_CONTAINER_NAME
-      - echo Displaying imagedefinitions.json content
+
+      - echo Creating imagedefinitions.json for ECS...
+
+      # Your actual ECS container name = springboot-ecr
+      - CONTAINER_NAME="springboot-ecr"
+
+      # Write imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' "$CONTAINER_NAME" "$REPOSITORY_URI:$IMAGE_TAG" > imagedefinitions.json
+
+      - echo "imagedefinitions.json created:"
       - cat imagedefinitions.json
 
 artifacts:
   files:
     - imagedefinitions.json
-    - target/springboot-aws-deploy.jar
+    - target/*.jar
